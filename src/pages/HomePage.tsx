@@ -1,28 +1,32 @@
-import React, { useEffect, useState} from "react"
-import  { useSearchUsersQuery } from "../store/github/github.api"
+import React, { useEffect, useState } from "react"
+import { useLazyGetUsersReposQuery, useSearchUsersQuery } from "../store/github/github.api"
 import { useDebounce } from "../hooks/debounce";
+import { IRepo } from "../models/models";
+import { RepoCard } from "../components/RepoCard";
 
 export function HomePage() {
     const [search, setSearch] = useState("");
     const [dropdown, setDropdown] = useState(false);
     const debounced = useDebounce(search);
-    const {isLoading, isError, data} = useSearchUsersQuery(debounced, {
+    const { isLoading, isError, data } = useSearchUsersQuery(debounced, {
         skip: debounced.length < 3,
         refetchOnFocus: true
     });
 
     const clickHandler = (username: string) => {
-        console.log(username);
-        
+        fetchRepos(username);
+
     }
+
+    const [fetchRepos, { isLoading: areReposLoading, data: repos }] = useLazyGetUsersReposQuery()
 
     useEffect(() => {
         setDropdown(data?.length! > 0 && debounced.length > 3);
     }, [debounced, data])
-    
+
     return (
         <div className="flex justify-center pt-10 mx-auto h-screen w-screen">
-            { isError && <p className="text-center text-red-600">Something went wrong...</p>}
+            {isError && <p className="text-center text-red-600">Something went wrong...</p>}
 
             <div className="relative w-[560]">
                 <input
@@ -40,9 +44,17 @@ export function HomePage() {
                             key={user.id}
                             onClick={() => clickHandler(user.login)}
                         >{user.login}</li>
-                    )) }
+                    ))}
                 </ul>}
+                <div className="container">
+                    {areReposLoading && <p className="text-center">Repos are loading...</p>}
+                    {repos?.map((repo: IRepo) => (
+                        <RepoCard repo={repo} key={repo.id}/>
+                    ))}
+                </div>
             </div>
+
+
         </div>
     )
 }
