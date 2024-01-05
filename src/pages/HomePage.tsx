@@ -5,30 +5,30 @@ import { IRepo } from "../models/models";
 import { RepoCard } from "../components/RepoCard";
 
 export function HomePage() {
-    const [search, setSearch] = useState("");
-    const [dropdown, setDropdown] = useState(false);
-    const debounced = useDebounce(search);
+    const [search, setSearch] = useState("")
+    const [dropdown, setDropdown] = useState(false)
+    const debounced = useDebounce(search)
     const { isLoading, isError, data } = useSearchUsersQuery(debounced, {
         skip: debounced.length < 3,
         refetchOnFocus: true
     });
 
     const clickHandler = (username: string) => {
-        fetchRepos(username);
-
+        fetchRepos(username)
+        setDropdown(false)
     }
 
     const [fetchRepos, { isLoading: areReposLoading, data: repos }] = useLazyGetUsersReposQuery()
 
     useEffect(() => {
-        setDropdown(data?.length! > 0 && debounced.length > 3);
+        setDropdown(data?.length! > 0 && debounced.length > 3)
     }, [debounced, data])
 
     return (
         <div className="flex justify-center pt-10 mx-auto h-screen w-screen">
             {isError && <p className="text-center text-red-600">Something went wrong...</p>}
 
-            <div className="relative w-[560]">
+            <div className="relative w-[560px]">
                 <input
                     type="text"
                     className="border py-2 px-4 w-full h-[42px] mb-2"
